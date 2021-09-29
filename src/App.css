@@ -1,38 +1,53 @@
-.App {
+.categories{
+ color: black;
+}
+.products{
+  color: black;
+  box-shadow: 0 10px 20px rgb(230, 223, 223),
+              0 -10px 20px rgb(230, 223, 223);
+}
+.filters{
+  color: black;
+}
+
+.filters h1{
+  text-align: left;
+  margin-top: -10px;
+  height: 20px;
+  line-height: 20px;
+  font-size: 20px;
+}
+
+.filters h1 span{
+  display: inline-block;
+  padding: 0 10px;
+  background-color: white;
+}
+
+.price-Boxes{
+  text-align: left;
+}
+
+.price-Boxes span{
+  background-color: white;
+  border-radius: 4%;
+}
+
+.pointer{
+  cursor:pointer
+}
+
+.shadowed{
+  box-shadow: 0 10px 20px rgb(230, 223, 223);
+}
+
+.image-shadow{
+  box-shadow: 4px 4px 20px rgb(235, 233, 232),
+  -4px -4px 20px rgb(235, 233, 232);
+}
+
+.iimg{
   text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  margin: auto;
+  color: rgba(231, 230, 224, 0.637);
 }
