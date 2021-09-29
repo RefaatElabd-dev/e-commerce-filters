@@ -2,13 +2,13 @@ import React, { Component } from "react";
 import axios from "axios";
 import { Slider } from "@material-ui/core";
 import ReactStars from "react-rating-stars-component";
-import $ from 'jquery';
+import $ from "jquery";
 
 import "./App.css";
 
 import Category from "./category";
 import Product from "./product";
-import Color from './colorCheckBox';
+import Color from "./colorCheckBox";
 
 class App extends Component {
   state = {
@@ -17,17 +17,19 @@ class App extends Component {
     selectedProducts: [],
     filteredProducts: [],
     selectedCategoryId: 1,
-    priceRange:[1,1000],
-    defaultPriceRange: [1,1000],
-    filteredByPrice:[],
-    selectedColorList:[],
-    defaultColorList:[],
-    filteredByColor:[],
-    filteredByRate:[],
-    selectedAverageRating:1
+    priceRange: [1, 1000],
+    defaultPriceRange: [1, 1000],
+    filteredByPrice: [],
+    selectedColorList: [],
+    defaultColorList: [],
+    filteredByColor: [],
+    filteredByRate: [],
+    RartingDefaultValue: 1,
+    selectedAverageRating: 1,
   };
 
-  componentDidMount = async () => {
+  //  mounting phase functions
+  callApis = async () => {
     await axios.get(`http://test-api.edfa3ly.io/category`).then(async (res) => {
       const catigories = res.data;
       await this.setState({ catigories });
@@ -37,7 +39,9 @@ class App extends Component {
       const products = res.data;
       await this.setState({ products });
     });
+  };
 
+  initiatestates = async () => {
     //intialize Selected products
     let selectedProducts = this.state.products.filter(
       (p) => p.categoryId === 1
@@ -48,41 +52,40 @@ class App extends Component {
     await this.setState({ filteredProducts: [...this.state.selectedProducts] });
 
     //get defaults
-    await this.setState({defaultPriceRange: this.getPriceLimitation()})
-    await this.setState({defaultColorList: this.getColorList()})
+    await this.setState({ defaultPriceRange: this.getPriceLimitation() });
+    await this.setState({ defaultColorList: this.getColorList() });
 
     //default individual filters
-    await this.redefaultSubFilteredarrays();
-
+    await this.defaultSubFilteredarrays();
   };
 
-  selectCategoryProducts = async (id) => {
+  componentDidMount = async () => {
+    await this.callApis();
+    await this.initiatestates();
+  };
 
+  //  select category products
+  selectCategoryProducts = async (id) => {
     await this.resetFilters();
-    
+
     let selectedProducts = this.state.products.filter(
       (p) => p.categoryId === id
     );
 
     await this.setState({ selectedProducts });
-
     await this.setState({ selectedCategoryId: id });
-
     await this.setState({ filteredProducts: selectedProducts });
 
     //default individual filters
-    await this.redefaultSubFilteredarrays();
-
+    await this.defaultSubFilteredarrays();
   };
 
-  redefaultSubFilteredarrays = async( ) =>{
-    //default individual filters
+  defaultSubFilteredarrays = async () => {
+    //default individual filtered arrays
     await this.setState({ filteredByPrice: [...this.state.selectedProducts] });
     await this.setState({ filteredByColor: [...this.state.selectedProducts] });
     await this.setState({ filteredByRate: [...this.state.selectedProducts] });
-  }
-
-  getSelectedProducts = () => this.state.selectedProducts;
+  };
 
   getCardStyle = (id) => {
     return this.state.selectedCategoryId === id
@@ -90,155 +93,188 @@ class App extends Component {
       : "card col-2 p-2 border-0";
   };
 
+  //   filtering Functions
 
   // price filter
   getPriceLimitation = () => {
-    let min = Math.min.apply(null, this.state.products.map(item => item.price)),
-    max = Math.max.apply(null, this.state.products.map(item => item.price));
+    let min = Math.min.apply(
+        null,
+        this.state.products.map((item) => item.price)
+      ),
+      max = Math.max.apply(
+        null,
+        this.state.products.map((item) => item.price)
+      );
 
     return [min, max];
-  }
+  };
 
   filterByPrice = async (e, data) => {
     //update priceRange
-    await this.setState({priceRange:data})
-    
+    await this.setState({ priceRange: data });
+
     //get filtered Products by price
-    let filteredByPrice = this.state.selectedProducts.filter(p => p.price >= this.state.priceRange[0] && p.price <= this.state.priceRange[1]);
-    await this.setState({filteredByPrice});
+    let filteredByPrice = this.state.selectedProducts.filter(
+      (p) =>
+        p.price >= this.state.priceRange[0] &&
+        p.price <= this.state.priceRange[1]
+    );
+
+    await this.setState({ filteredByPrice });
 
     await this.filterProducts();
-  }
+  };
 
   resetPrice = async () => {
-    await this.setState({priceRange:this.state.defaultPriceRange});
+    await this.setState({ priceRange: this.state.defaultPriceRange });
 
-    let filteredByPrice = this.state.selectedProducts.filter(p => p.price >= this.state.priceRange[0] && p.price <= this.state.priceRange[1]);
-    await this.setState({filteredByPrice});
+    let filteredByPrice = this.state.selectedProducts.filter(
+      (p) =>
+        p.price >= this.state.priceRange[0] &&
+        p.price <= this.state.priceRange[1]
+    );
+    await this.setState({ filteredByPrice });
 
     await this.filterProducts();
-  }
+  };
 
-  //color filter
-  getColorList = () => [...new Set(this.state.products.map(item => item.color))];
+  //   color filter
+  getColorList = () => [
+    ...new Set(this.state.products.map((item) => item.color)),
+  ];
 
   updateSelectedColorList = async (e) => {
-    let isChecked = e.target.checked;
-    
-    let selectedColorList = [...this.state.selectedColorList];
+    let isChecked = e.target.checked,
+      selectedColorList = [...this.state.selectedColorList];
 
-    if(isChecked){
+    if (isChecked) {
       selectedColorList.push(e.target.value);
-    }
-    else{
+    } else {
       const index = selectedColorList.indexOf(e.target.value);
       if (index > -1) {
         selectedColorList.splice(index, 1);
       }
     }
 
-    await this.setState({selectedColorList});
-  }
+    await this.setState({ selectedColorList });
+  };
 
   updateFilteredByColor = async () => {
     const selectedColorList = [...this.state.selectedColorList];
 
     let filteredByColor = [];
 
-    if(selectedColorList.length > 0){
-       filteredByColor = this.state.selectedProducts.filter( product => selectedColorList.indexOf(product.color) !== -1);
-    }
-    else{
-      filteredByColor = [...this.state.selectedProducts]
+    if (selectedColorList.length > 0) {
+      filteredByColor = this.state.selectedProducts.filter(
+        (product) => selectedColorList.indexOf(product.color) !== -1
+      );
+    } else {
+      filteredByColor = [...this.state.selectedProducts];
     }
 
-    await this.setState({filteredByColor});
-  }
+    await this.setState({ filteredByColor });
+  };
 
   handleColorChange = async (e) => {
-    await this.resetSearchColorBox()
+    await this.resetSearchColorBox();
 
     await this.updateSelectedColorList(e);
 
     await this.updateFilteredByColor();
 
     await this.filterProducts();
-  }
+  };
 
   filterByColorText = async (e) => {
-
     await this.resetColorfilters();
-    
-    let filteredByColor = this.state.selectedProducts.filter(p => p.color.includes(e.target.value));
 
-    await this.setState({filteredByColor});
+    let filteredByColor = this.state.selectedProducts.filter((p) =>
+      p.color.includes(e.target.value)
+    );
+
+    await this.setState({ filteredByColor });
 
     await this.filterProducts();
-  }
+  };
+
+  resetCheckBoxesInDom = () => {
+    $('input[name="colorList"]').prop("checked", false);
+  };
 
   resetColorfilters = async () => {
+    this.resetCheckBoxesInDom();
 
-    $( 'input[name="colorList"]' ).prop('checked', false);
-
-    await this.setState({selectedColorList:[]});
-
-    await this.setState({filteredByColor:[...this.state.selectedProducts]});
-  }
+    await this.setState({ selectedColorList: [] });
+    await this.setState({ filteredByColor: [...this.state.selectedProducts] });
+  };
 
   resetSearchColorBox = async () => {
     document.getElementById("searchColorBox").value = "";
 
-    await this.setState({filteredByColor:[...this.state.selectedProducts]});
-  }
+    await this.setState({ filteredByColor: [...this.state.selectedProducts] });
+  };
 
   resetColor = async () => {
-    if(this.state.selectedColorList.length > 0){
+    if (this.state.selectedColorList.length > 0) {
       await this.resetColorfilters();
-    }
-    else{
+    } else {
       await this.resetSearchColorBox();
     }
 
     await this.filterProducts();
-  }
+  };
 
+  //  filter by Average Rating
   ratingChanged = async (data) => {
-    await this.setState({selectedAverageRating:data});
+    await this.setState({ selectedAverageRating: data });
 
-    let filteredByRate = 
-         this.state.selectedProducts.filter( product => product.rating >= data);
+    let filteredByRate = this.state.selectedProducts.filter(
+      (p) => p.rating >= data
+    );
 
-    await this.setState({filteredByRate});
+    await this.setState({ filteredByRate });
 
     await this.filterProducts();
-  }
+  };
+
+  resetRatingInDom = () =>
+    $("#stars").attr("value", this.state.selectedAverageRating);
 
   resetRate = async () => {
-    await this.setState({selectedAverageRating:1});
-    $("#stars").attr("value", this.state.selectedAverageRating);
-    await this.setState({filteredByColor:[...this.state.selectedProducts]});
-  }
+    await this.setState({
+      selectedAverageRating: this.state.RartingDefaultValue,
+    });
+    await this.setState({ filteredByColor: [...this.state.selectedProducts] });
+    this.resetRatingInDom();
+  };
 
-  filterProducts = async () =>{
-    let filteredProducts = this.getArraysIntersection(this.state.filteredByPrice, this.state.filteredByColor);
+  filterProducts = async () => {
+    const { filteredByPrice, filteredByColor, filteredByRate } = this.state;
 
-    filteredProducts = this.getArraysIntersection(filteredProducts, this.state.filteredByRate);
+    let filteredProducts = this.getArraysIntersection(
+      filteredByPrice,
+      filteredByColor
+    );
+
+    filteredProducts = this.getArraysIntersection(
+      filteredProducts,
+      filteredByRate
+    );
 
     await this.setState({ filteredProducts });
-  }
+  };
 
-  getArraysIntersection = (a1,a2) => {
-    return  a1.filter((n) => a2.indexOf(n) !== -1);
-  }
+  getArraysIntersection = (a1, a2) => {
+    return a1.filter((n) => a2.indexOf(n) !== -1);
+  };
 
   resetFilters = async () => {
     await this.resetPrice();
     await this.resetColor();
     await this.resetRate();
-  }
+  };
 
   render() {
-    
     return (
       <div className="container">
         <div className="row head">
@@ -263,7 +299,9 @@ class App extends Component {
         <div className="row justify-content-evenly my-5 prods">
           <div className="col-3 h-100 filters border border-muted">
             <h1>
-              <span>Filters <i class="fas fa-microscope text-primary"></i></span>
+              <span>
+                Filters <i className="fas fa-microscope text-primary"></i>
+              </span>
             </h1>
 
             <div className="priceFilter col text-center m-3 p-2 border border-muted border-rounded">
@@ -296,22 +334,35 @@ class App extends Component {
             </div>
 
             <div className="colorFilter col m-3 px-3 border border-muted border-rounded">
-              
               <div className="my-2 fw-bold">
                 <label htmlFor="searchColorBox" className="form-label fw-bold">
                   <span className="text-danger">C</span>
                   <span className="text-success">O</span>
                   <span className="text-primary">L</span>
                   <span className="text-warning">O</span>
-                  <span classNamyarne="text-muted">R</span>
+                  <span className="text-muted">R</span>
                   <span className="text-info">S</span>
                 </label>
-                <input type="text" className="form-control" id="searchColorBox" placeholder="----" onKeyUp={this.filterByColorText}/>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="searchColorBox"
+                  placeholder="----"
+                  onKeyUp={this.filterByColorText}
+                />
               </div>
-              <div className="row m-1 p-3 border border-muted border-rounded overflow-auto" style={{maxHeight: '204px'}}>
-                {this.state.defaultColorList.map( (c) =>
-                  <Color key={c} Name={c} handleChange={this.handleColorChange} {...this.props}/>)
-                }
+              <div
+                className="row m-1 p-3 border border-muted border-rounded overflow-auto"
+                style={{ maxHeight: "204px" }}
+              >
+                {this.state.defaultColorList.map((c) => (
+                  <Color
+                    key={c}
+                    Name={c}
+                    handleChange={this.handleColorChange}
+                    {...this.props}
+                  />
+                ))}
               </div>
 
               <button
@@ -324,7 +375,9 @@ class App extends Component {
 
             <div className="col m-3 p-3 border border-muted border-rounded">
               <p className="text-start fw-bold">Average Rating</p>
-              <span className="m-1 text-danger fw-liight d-none d-lg-inline">more than or equal to : </span>
+              <span className="m-1 text-danger fw-liight d-none d-lg-inline">
+                more than or equal to :{" "}
+              </span>
               <div className="m-1">
                 <ReactStars
                   key={new Date().getTime()}
@@ -339,11 +392,11 @@ class App extends Component {
           </div>
 
           {/* <div className="col-8 offset-1 justify-content-evenly products"> */}
-            <div className="col-8 row justify-content-evenly p-4 products">
-              {this.state.filteredProducts.map((product) => (
-                <Product key={product.id} product={product} {...this.props} />
-              ))}
-            </div>
+          <div className="col-8 row justify-content-evenly p-4 products">
+            {this.state.filteredProducts.map((product) => (
+              <Product key={product.id} product={product} {...this.props} />
+            ))}
+          </div>
           {/* </div> */}
         </div>
       </div>

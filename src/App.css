@@ -1,3 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Pattaya&display=swap");
+
+
+
+
+
+
 .categories{
  color: black;
 }
@@ -51,3 +58,10 @@
   margin: auto;
   color: rgba(231, 230, 224, 0.637);
 }
+
+#product-name{
+  color: blue;
+  font-family: "Pattaya", sans-serif;
+  font-size: 1.2em;
+  cursor: pointer;
+  }
